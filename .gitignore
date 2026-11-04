@@ -1,0 +1,7 @@
+/vendor/
+/dist/
+.DS_Store
+
+# Testbilder: nur eigene bzw. KI-Bilder ins Repo, Fotos von Bildagenturen bleiben lokal
+/tests/browser/img/*
+!/tests/browser/img/geschenkkorb-ki.jpg

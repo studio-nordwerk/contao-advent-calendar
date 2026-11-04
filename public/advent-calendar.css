@@ -1,0 +1,331 @@
+/* Adventskalender – Farben und Formen über die Variablen anpassen */
+.advent-calendar {
+    --ac-accent: #a8322d;
+    --ac-accent-text: #fff;
+    --ac-door-bg: rgba(255, 253, 248, .9);
+    --ac-door-border: rgba(255, 255, 255, .6);
+    --ac-door-text: #2c2a26;
+    --ac-inside-bg: #f3e9d8;
+    --ac-radius: .6rem;
+    --ac-gap: .75rem;
+    --ac-door-size: 6.5rem;
+    --ac-number-font: Georgia, "Times New Roman", serif;
+    --ac-dialog-bg: #fffdf8;
+    --ac-dialog-text: #2c2a26;
+    /* Hintergrundbild: freier Streifen über den Türchen, Bildausschnitt, Höhe und Farbe darunter */
+    --ac-top-space: 0rem;
+    --ac-image-position: center;
+    --ac-image-height: 100%;
+    --ac-image-fill: transparent;
+    --ac-image-mask: none;
+
+    position: relative;
+    isolation: isolate;
+    padding: clamp(1rem, 4vw, 2.5rem);
+    padding-top: calc(clamp(1rem, 4vw, 2.5rem) + var(--ac-top-space));
+    border-radius: var(--ac-radius);
+    overflow: hidden;
+    background: var(--ac-image-fill);
+}
+
+.advent-calendar--image {
+    color: #fff;
+}
+
+.advent-calendar__background,
+.advent-calendar__snow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+}
+
+/* Mitgeliefertes Bild „Weihnachtsstern“: Blüten unten im Bild halten, Türchen heben sich mit Schatten ab */
+.advent-calendar--poinsettia {
+    --ac-image-position: center bottom;
+    --ac-image-fill: #f1ebe2;
+}
+
+.advent-calendar--poinsettia .advent-calendar__number,
+.advent-calendar--poinsettia .advent-calendar__demo {
+    box-shadow: 0 6px 18px rgba(40, 10, 8, .28);
+}
+
+.advent-calendar__background {
+    bottom: auto;
+    height: var(--ac-image-height);
+}
+
+.advent-calendar__background figure,
+.advent-calendar__background img {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    object-fit: cover;
+    object-position: var(--ac-image-position);
+    -webkit-mask-image: var(--ac-image-mask);
+    mask-image: var(--ac-image-mask);
+}
+
+.advent-calendar__snow {
+    z-index: 0;
+    pointer-events: none;
+}
+
+.advent-calendar__demo {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 1rem;
+    padding: .4rem .8rem;
+    display: inline-block;
+    border-radius: 99rem;
+    background: var(--ac-door-bg);
+    color: var(--ac-door-text);
+    font-size: .85rem;
+}
+
+/* Raster: passt sich der Breite an, Türchen 24 ist doppelt so groß */
+.advent-calendar__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--ac-door-size), 28%), 1fr));
+    grid-auto-flow: dense;
+    gap: var(--ac-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.advent-calendar__item {
+    aspect-ratio: 1;
+    margin: 0;
+    perspective: 50rem;
+}
+
+.advent-calendar__item--big {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.advent-calendar__door {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: var(--ac-radius);
+    background: var(--ac-inside-bg);
+    color: var(--ac-door-text);
+    font: inherit;
+    cursor: pointer;
+    transform-style: preserve-3d;
+}
+
+/* Hinter dem Türchen: ein kleiner Stern, sichtbar wenn offen */
+.advent-calendar__door::before {
+    content: "✦";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--ac-accent);
+    font-size: 1.6rem;
+    opacity: 0;
+    transition: opacity .3s .2s;
+}
+
+.advent-calendar__door--opened::before {
+    opacity: 1;
+}
+
+/* Geöffnete Tür mit Bild: Bild statt Stern */
+.advent-calendar__door--thumb {
+    background: var(--ac-inside-bg) var(--ac-thumb) center / cover no-repeat;
+}
+
+.advent-calendar__door--thumb::before {
+    content: none;
+}
+
+/* Die Tür selbst */
+.advent-calendar__number {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--ac-door-border);
+    border-radius: var(--ac-radius);
+    background: var(--ac-door-bg);
+    box-shadow: 0 .3rem 1rem rgba(0, 0, 0, .15);
+    font: 600 clamp(1.4rem, 4vw, 2rem)/1 var(--ac-number-font);
+    transform-origin: left center;
+    transition: transform .6s cubic-bezier(.3, .7, .2, 1), box-shadow .2s;
+    backface-visibility: hidden;
+}
+
+.advent-calendar__item--big .advent-calendar__number {
+    font-size: clamp(2.2rem, 7vw, 3.4rem);
+}
+
+.advent-calendar__door:hover .advent-calendar__number,
+.advent-calendar__door:focus-visible .advent-calendar__number {
+    transform: rotateY(-12deg);
+    box-shadow: 0 .5rem 1.4rem rgba(0, 0, 0, .25);
+}
+
+.advent-calendar__door:focus-visible {
+    outline: 3px solid var(--ac-accent);
+    outline-offset: 3px;
+}
+
+.advent-calendar__door--today .advent-calendar__number {
+    background: var(--ac-accent);
+    border-color: var(--ac-accent);
+    color: var(--ac-accent-text);
+}
+
+.advent-calendar__door--early .advent-calendar__number {
+    color: color-mix(in srgb, var(--ac-door-text) 75%, transparent);
+}
+
+.advent-calendar__door--opened .advent-calendar__number,
+.advent-calendar__door--opened:hover .advent-calendar__number {
+    transform: rotateY(-72deg);
+}
+
+/* Fenster mit dem Inhalt */
+.advent-calendar__dialog {
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    padding: 2rem clamp(1.25rem, 4vw, 2.25rem);
+    border: 0;
+    border-radius: var(--ac-radius);
+    background: var(--ac-dialog-bg);
+    color: var(--ac-dialog-text);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .35);
+    text-align: center;
+}
+
+.advent-calendar__dialog[open] {
+    animation: advent-calendar-in .35s cubic-bezier(.3, .7, .2, 1);
+}
+
+.advent-calendar__dialog::backdrop {
+    background: rgba(20, 18, 15, .6);
+}
+
+@keyframes advent-calendar-in {
+    from { opacity: 0; transform: translateY(1rem) scale(.97); }
+}
+
+.advent-calendar__close-form {
+    position: absolute;
+    top: .5rem;
+    right: .5rem;
+    margin: 0;
+}
+
+.advent-calendar__close {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.advent-calendar__close:hover,
+.advent-calendar__close:focus-visible {
+    background: rgba(0, 0, 0, .07);
+}
+
+.advent-calendar__content h2 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    line-height: 1.2;
+}
+
+.advent-calendar__content figure {
+    margin: 0 0 1rem;
+}
+
+.advent-calendar__content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: calc(var(--ac-radius) * .6);
+}
+
+.advent-calendar__kicker {
+    margin: 0 0 .4rem;
+    color: var(--ac-accent);
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.advent-calendar__price {
+    margin: 1rem 0;
+    font-size: 1.25rem;
+}
+
+.advent-calendar__price-new {
+    color: var(--ac-accent);
+    font-weight: 700;
+}
+
+.advent-calendar__price-old {
+    margin-left: .5rem;
+    opacity: .6;
+}
+
+.advent-calendar__coupon {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.advent-calendar__code {
+    padding: .45rem .9rem;
+    border: 2px dashed var(--ac-accent);
+    border-radius: .4rem;
+    background: transparent;
+    color: inherit;
+    font: 700 1.1rem/1 ui-monospace, Menlo, monospace;
+    letter-spacing: .08em;
+    cursor: copy;
+}
+
+.advent-calendar__code[data-copied]::after {
+    content: " ✓";
+    color: var(--ac-accent);
+}
+
+.advent-calendar__button {
+    display: inline-block;
+    margin-top: .5rem;
+    padding: .8rem 1.6rem;
+    border-radius: 99rem;
+    background: var(--ac-accent);
+    color: var(--ac-accent-text);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.advent-calendar__button:hover,
+.advent-calendar__button:focus-visible {
+    filter: brightness(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .advent-calendar__number,
+    .advent-calendar__dialog[open] {
+        transition: none;
+        animation: none;
+    }
+}
