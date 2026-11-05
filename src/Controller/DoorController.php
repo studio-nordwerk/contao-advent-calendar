@@ -6,6 +6,7 @@ namespace Nordwerk\AdventCalendarBundle\Controller;
 
 use Contao\CoreBundle\Controller\AbstractController;
 use Contao\CoreBundle\Image\Studio\Studio;
+use Contao\CoreBundle\InsertTag\InsertTagParser;
 use Contao\CoreBundle\Security\Authentication\Token\TokenChecker;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\CoreBundle\Util\LocaleUtil;
@@ -33,6 +34,8 @@ class DoorController extends AbstractController
         private readonly TokenChecker $tokenChecker,
         #[Autowire(service: 'translator')]
         private readonly LocaleAwareInterface $translator,
+        #[Autowire(service: 'contao.insert_tag.parser')]
+        private readonly InsertTagParser $insertTags,
     ) {
     }
 
@@ -52,7 +55,9 @@ class DoorController extends AbstractController
             return $this->reply(['state' => 'missing'], 404);
         }
 
-        // Texte im Türchen in der Sprache der Website (die Adresse selbst hat keine Seite und keine Sprache)
+        // Texte und Bildtexte in der Sprache der Website (die Adresse selbst hat keine Seite und keine Sprache)
+        $locale = null;
+
         if ($language = (string) ($pages[array_key_last($pages)]['language'] ?? '')) {
             $locale = LocaleUtil::formatAsLocale($language);
             $request->setLocale($locale);
@@ -97,6 +102,11 @@ class DoorController extends AbstractController
             $door[$field] = StringUtil::decodeEntities((string) $door[$field]);
         }
 
+        // Insert-Tags hier auflösen statt im Template: gleiches Ergebnis in Contao 5 und 6 (dort
+        // entfernt der Twig-Filter insert_tag HTML, z. B. aus {{link::*}}).
+        $door['text'] = $this->insertTags->replaceInline((string) $door['text']);
+        $door['url'] = StringUtil::decodeEntities($this->insertTags->replaceInline((string) $door['url']));
+
         // Ohne eingestellte Bildgröße auf 1200 px verkleinern: So landet das Bild in
         // assets/images und ist auch sichtbar, wenn sein Ordner in der Dateiverwaltung
         // nicht öffentlich ist.
@@ -107,7 +117,7 @@ class DoorController extends AbstractController
         }
 
         $figure = $door['singleSRC']
-            ? $this->studio->createFigureBuilder()->fromUuid($door['singleSRC'])->setSize($size)->buildIfResourceExists()
+            ? $this->studio->createFigureBuilder()->fromUuid($door['singleSRC'])->setSize($size)->setLocale($locale)->buildIfResourceExists()
             : null;
 
         $html = $this->renderView('@Contao/advent_calendar/door.html.twig', [

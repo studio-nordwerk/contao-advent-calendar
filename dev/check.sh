@@ -78,12 +78,13 @@ door() {
 echo "Contao $CONTAO, PHP $PHP_VERSION"
 door 100 200 'GEHEIM-1' '' 'Öffentliche Seite: Türchen offen'
 door 100 200 'Ihr Code:' 'Your code' 'Türchen in der Sprache der Website'
+door 100 200 'a href=' '{{link' 'Insert-Tag im Text wird zum Link'
 door 109 200 '"state":"early"' 'ZUKUNFT-1' 'Öffentliche Seite, Türchen noch nicht dran: kein Inhalt'
 door 116 200 'GEHEIM-1' '' 'In einer Elementgruppe auf öffentlicher Seite: Türchen offen'
 door 101 404 '' 'GEHEIM' 'Seite nur für Mitglieder: gesperrt'
 door 112 404 '' 'GEHEIM' 'Unterseite einer Mitgliederseite, in Elementgruppe: gesperrt'
 door 102 404 '' 'GEHEIM' 'Unveröffentlichte Seite: gesperrt'
-door 103 404 '' 'GEHEIM' 'Unterseite einer unveröffentlichten Seite: gesperrt'
+door 103 200 'GEHEIM-1' '' 'Veröffentlichte Unterseite einer unveröffentlichten Seite: offen (wie die Seite selbst)'
 door 104 404 '' 'GEHEIM' 'Abgelaufene Seite: gesperrt'
 door 105 404 '' 'GEHEIM' 'Unveröffentlichter Artikel: gesperrt'
 door 106 404 '' 'GEHEIM' 'Artikel nur für Mitglieder: gesperrt'
@@ -92,6 +93,11 @@ door 108 404 '' 'GEHEIM' 'Element nur für Mitglieder: gesperrt'
 door 110 404 '' 'GEHEIM' 'Element außerhalb eines Artikels: gesperrt'
 door 114 404 '' 'GEHEIM' 'In versteckter Elementgruppe: gesperrt'
 door 99999 404 '' '' 'Unbekanntes Element: 404'
+
+# Wartungsmodus: Seite antwortet 503, Türchen gibt es dann auch keine
+dc exec -T db mariadb -ucontao -pcontao contao -e "UPDATE tl_page SET maintenanceMode = 1 WHERE id = 1"
+door 100 404 '' 'GEHEIM' 'Website im Wartungsmodus: gesperrt'
+dc exec -T db mariadb -ucontao -pcontao contao -e "UPDATE tl_page SET maintenanceMode = 0 WHERE id = 1"
 
 headers=$(curl -s -D - -o /dev/null "$BASE/_advent_calendar/100?day=1")
 if grep -qi '^cache-control:.*no-store' <<<"$headers" && grep -qi '^cache-control:.*private' <<<"$headers"; then ok 'Antwort wird nicht zwischengespeichert'; else fail "Cache-Control fehlt: $headers"; fi

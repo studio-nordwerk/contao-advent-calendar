@@ -57,7 +57,10 @@ check('Artikel nur für Mitglieder, Gast: gesperrt', $visible(null, $protected +
 check('Artikel nur für Mitglieder, Mitglied: sichtbar', $visible(null, $protected + $article, null, false, $member), true);
 
 check('Seite unveröffentlicht: gesperrt', $visible(null, $article, [['published' => ''] + $page, $root]), false);
-check('Elternseite unveröffentlicht: gesperrt', $visible(null, $article, [$page, ['published' => ''] + $page, $root]), false);
+check('Elternseite unveröffentlicht, Seite selbst veröffentlicht: sichtbar (wie in Contao)', $visible(null, $article, [$page, ['published' => ''] + $page, $root]), true);
+check('Startseite im Wartungsmodus: gesperrt', $visible(null, $article, [$page, ['maintenanceMode' => '1'] + $root]), false);
+check('Vorschau: Wartungsmodus zählt nicht', $visible(null, $article, [$page, ['maintenanceMode' => '1'] + $root], true), true);
+check('Startseite abgelaufen: gesperrt', $visible(null, $article, [$page, ['stop' => (string) ($now - 1)] + $root]), false);
 check('Startseite unveröffentlicht: gesperrt', $visible(null, $article, [$page, ['published' => ''] + $root]), false);
 check('Seite erst ab morgen: gesperrt', $visible(null, $article, [['start' => (string) ($now + 60)] + $page, $root]), false);
 check('Seite nur für Mitglieder, Gast: gesperrt', $visible(null, $article, [$protected + $page, $root]), false);

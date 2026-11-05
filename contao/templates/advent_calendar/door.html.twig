@@ -23,7 +23,7 @@
 
     {% block text %}
         {% if door.text %}
-            <div class="advent-calendar__text">{{ door.text|insert_tag|raw }}</div>
+            <div class="advent-calendar__text">{{ door.text|raw }}</div>
         {% endif %}
     {% endblock %}
 
@@ -48,7 +48,7 @@
     {% block action %}
         {% if door.url %}
             <p class="advent-calendar__action">
-                <a class="advent-calendar__button" href="{{ door.url|insert_tag }}"{% if door.target %} target="_blank" rel="noopener"{% endif %}>{{ door.linkTitle ?: 'MSC.adventCalendarButton'|trans }}</a>
+                <a class="advent-calendar__button" href="{{ door.url }}"{% if door.target %} target="_blank" rel="noopener"{% endif %}>{{ door.linkTitle ?: 'MSC.adventCalendarButton'|trans }}</a>
             </p>
         {% endif %}
     {% endblock %}

@@ -10,7 +10,9 @@ use Contao\DataContainer;
 use Contao\FilesModel;
 use Contao\Folder;
 use Contao\Message;
+use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -24,6 +26,8 @@ class PublicImageWarningListener
         private readonly Connection $connection,
         private readonly ContaoFramework $framework,
         private readonly RequestStack $requestStack,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
     ) {
     }
 
@@ -54,6 +58,11 @@ class PublicImageWarningListener
 
             $folder = \dirname((string) $file->path);
 
+            // new Folder() legt fehlende Ordner an; gelöschte also überspringen
+            if (!is_dir($this->projectDir.'/'.$folder)) {
+                continue;
+            }
+
             if ((new Folder($folder))->isUnprotected()) {
                 $days[] = $door['day'];
                 $folders[$folder] = $folder;
@@ -64,7 +73,7 @@ class PublicImageWarningListener
             $message->addInfo(\sprintf(
                 $GLOBALS['TL_LANG']['tl_advent_calendar_door']['publicFolder'] ?? 'Doors %s: public folder (%s).',
                 implode(', ', $days),
-                implode(', ', $folders),
+                StringUtil::specialchars(implode(', ', $folders)),
             ));
         }
     }

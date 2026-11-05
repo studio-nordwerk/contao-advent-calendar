@@ -30,9 +30,9 @@ INSERT INTO tl_advent_calendar (id, tstamp, title, year, keepOpen, shuffle, demo
     (10, 1, 'Offen (2020)', 2020, '1', '', '', 'none', ''),
     (11, 1, 'Zukunft (2099)', 2099, '1', '', '', 'none', '');
 
-INSERT INTO tl_advent_calendar_door (pid, tstamp, day, headline, couponCode, published) VALUES
-    (10, 1, 1, 'Türchen eins', 'GEHEIM-1', '1'),
-    (11, 1, 1, 'Türchen eins', 'ZUKUNFT-1', '1');
+INSERT INTO tl_advent_calendar_door (pid, tstamp, day, headline, couponCode, text, published) VALUES
+    (10, 1, 1, 'Türchen eins', 'GEHEIM-1', '<p>Mehr im {{link::2}}.</p>', '1'),
+    (11, 1, 1, 'Türchen eins', 'ZUKUNFT-1', '', '1');
 
 INSERT INTO tl_content (id, pid, ptable, sorting, tstamp, type, adventCalendar, invisible, protected, `groups`) VALUES
     (100, 2, 'tl_article', 128, 1, 'advent_calendar', 10, 0, 0, NULL),
