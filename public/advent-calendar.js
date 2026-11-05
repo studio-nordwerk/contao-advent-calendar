@@ -34,15 +34,32 @@
         }
     };
 
+    // Heutiges Datum in der Zeitzone der Website, nicht nach der Uhr des Besuchers: [Jahr, Monat, Tag]
+    const todayParts = (root) => {
+        if (root.dataset.today) {
+            return root.dataset.today.split('-').map(Number);
+        }
+
+        try {
+            const parts = new Intl.DateTimeFormat('en-CA', { timeZone: root.dataset.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+
+            return parts.split('-').map(Number);
+        } catch (e) {
+            const now = new Date();
+
+            return [now.getFullYear(), now.getMonth() + 1, now.getDate()];
+        }
+    };
+
     // Nur fürs Aussehen; ob ein Türchen wirklich aufgeht, entscheidet der Server.
     const stateFor = (day, root) => {
         if (root.dataset.demo === '1') {
             return 'open';
         }
 
-        const now = root.dataset.today ? new Date(`${root.dataset.today}T12:00:00`) : new Date();
+        const [y, m, d] = todayParts(root);
         const year = parseInt(root.dataset.year, 10);
-        const today = now.getFullYear() === year && now.getMonth() === 11 ? now.getDate() : (now.getFullYear() > year ? 99 : 0);
+        const today = y === year && m === 12 ? d : (y > year ? 99 : 0);
 
         if (day > today) {
             return 'early';

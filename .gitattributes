@@ -2,3 +2,4 @@
 /.gitignore export-ignore
 /scripts export-ignore
 /tests export-ignore
+/dev export-ignore

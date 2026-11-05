@@ -42,7 +42,7 @@ $GLOBALS['TL_DCA']['tl_advent_calendar'] = [
         'operations' => [
             'children' => [
                 'href' => 'table=tl_advent_calendar_door',
-                'icon' => 'bundles/heikewiesecontaoadventcalendar/icons/door.svg',
+                'icon' => 'bundles/nordwerkadventcalendar/icons/door.svg',
                 'prefetch' => true,
                 'attributes' => 'data-contao--deeplink-target="primary"',
                 'primary' => true,

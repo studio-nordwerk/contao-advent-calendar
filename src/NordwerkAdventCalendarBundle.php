@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace HeikeWiese\ContaoAdventCalendarBundle;
+namespace Nordwerk\AdventCalendarBundle;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-class HeikeWieseContaoAdventCalendarBundle extends AbstractBundle
+class NordwerkAdventCalendarBundle extends AbstractBundle
 {
     public function getPath(): string
     {

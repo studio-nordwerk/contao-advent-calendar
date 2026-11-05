@@ -3,11 +3,11 @@ services:
         autowire: true
         autoconfigure: true
 
-    HeikeWiese\ContaoAdventCalendarBundle\:
+    Nordwerk\AdventCalendarBundle\:
         resource: '../src/'
         exclude:
             - '../src/ContaoManager/'
-            - '../src/HeikeWieseContaoAdventCalendarBundle.php'
+            - '../src/NordwerkAdventCalendarBundle.php'
 
-    HeikeWiese\ContaoAdventCalendarBundle\Controller\DoorController:
+    Nordwerk\AdventCalendarBundle\Controller\DoorController:
         tags: ['controller.service_arguments']

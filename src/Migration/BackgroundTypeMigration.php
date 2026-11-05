@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HeikeWiese\ContaoAdventCalendarBundle\Migration;
+namespace Nordwerk\AdventCalendarBundle\Migration;
 
 use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;

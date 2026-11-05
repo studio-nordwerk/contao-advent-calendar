@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HeikeWiese\ContaoAdventCalendarBundle\Controller\ContentElement;
+namespace Nordwerk\AdventCalendarBundle\Controller\ContentElement;
 
 use Contao\ContentModel;
 use Contao\CoreBundle\Controller\ContentElement\AbstractContentElementController;
@@ -10,7 +10,7 @@ use Contao\CoreBundle\DependencyInjection\Attribute\AsContentElement;
 use Contao\CoreBundle\Image\Studio\Studio;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use Doctrine\DBAL\Connection;
-use HeikeWiese\ContaoAdventCalendarBundle\Calendar\DoorRules;
+use Nordwerk\AdventCalendarBundle\Calendar\DoorRules;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,7 +42,7 @@ class AdventCalendarController extends AbstractContentElementController
         // vom Server geholt.
         $template->set('calendar', $calendar);
         $template->set('days', DoorRules::order((int) $calendar['id'], (bool) $calendar['shuffle']));
-        $template->set('door_url', $this->urlGenerator->generate('heike_wiese_advent_calendar_door', ['id' => $model->id]));
+        $template->set('door_url', $this->urlGenerator->generate('nordwerk_advent_calendar_door', ['id' => $model->id]));
         // Hintergrund: mitgelieferter Weihnachtsstern, eigenes Bild oder keins. Leerer
         // Wert = Kalender aus der Zeit vor 0.2.0, falls die Migration noch nicht lief.
         $type = (string) ($calendar['backgroundType'] ?? '') ?: ($calendar['singleSRC'] ? 'image' : 'none');
@@ -50,16 +50,20 @@ class AdventCalendarController extends AbstractContentElementController
         $template->set('background', 'image' === $type && $calendar['singleSRC']
             ? $this->studio->createFigureBuilder()->fromUuid($calendar['singleSRC'])->setSize([1920, 0, 'proportional'])->buildIfResourceExists()
             : null);
-        $template->set('poinsettia_url', 'bundles/heikewiesecontaoadventcalendar/hintergrund-weihnachtsstern.jpg');
+        $template->set('poinsettia_url', 'bundles/nordwerkadventcalendar/hintergrund-weihnachtsstern.jpg');
 
-        // Versionsnummer an den Adressen, damit Browser nach einem Update die neuen
-        // Dateien laden
+        $today = new \DateTimeImmutable('now', new \DateTimeZone(date_default_timezone_get()));
+        $template->set('timezone', $today->getTimezone()->getName());
+        $template->set('demo', DoorRules::demoActive($today, (int) $calendar['year'], (bool) $calendar['demoMode']));
+
+        // Stylesheet und Skript fügt die Vorlage per {% add %} in die Seite ein. Die Versionsnummer an
+        // den Adressen sorgt dafür, dass Browser nach einem Update die neuen Dateien laden.
         $public = \dirname(__DIR__, 3).'/public';
-        $css = substr((string) md5_file($public.'/advent-calendar.css'), 0, 8);
-        $js = substr((string) md5_file($public.'/advent-calendar.js'), 0, 8);
+        $template->set('css_url', 'bundles/nordwerkadventcalendar/advent-calendar.css?v='.substr((string) md5_file($public.'/advent-calendar.css'), 0, 8));
+        $template->set('js_url', 'bundles/nordwerkadventcalendar/advent-calendar.js?v='.substr((string) md5_file($public.'/advent-calendar.js'), 0, 8));
 
-        $GLOBALS['TL_HEAD']['advent_calendar'] = '<link rel="stylesheet" href="bundles/heikewiesecontaoadventcalendar/advent-calendar.css?v='.$css.'">';
-        $GLOBALS['TL_BODY']['advent_calendar'] = '<script src="bundles/heikewiesecontaoadventcalendar/advent-calendar.js?v='.$js.'" defer></script>';
+        // Ändert jemand den Kalender (z. B. Hintergrund, Reihenfolge), leert Contao den Seiten-Cache.
+        $this->tagResponse('contao.db.tl_advent_calendar.'.$calendar['id']);
 
         return $template->getResponse();
     }

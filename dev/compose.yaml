@@ -1,0 +1,49 @@
+# Lokale Testinstallation: Contao mit diesem Paket (Pfad-Repository, verlinkt).
+# Start über dev/check.sh 5.3 oder dev/check.sh 6.0
+name: advent-calendar-${CONTAO:-5.3}
+services:
+  php:
+    build:
+      context: ./php
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.3}
+    working_dir: /workspace/dev/app-${CONTAO:-5.3}
+    volumes:
+      - ..:/workspace
+      - composer-cache:/tmp/composer-cache
+    environment:
+      APP_ENV: prod
+      APP_SECRET: local-advent-calendar-only
+      DATABASE_URL: mysql://contao:contao@db:3306/contao?serverVersion=mariadb-11.8.9&charset=utf8mb4
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      COMPOSER_ALLOW_SUPERUSER: 1
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    image: caddy:2.8-alpine
+    ports:
+      - "127.0.0.1:${PORT:-8141}:80"
+    environment:
+      APP_DIR: /workspace/dev/app-${CONTAO:-5.3}
+    volumes:
+      - ..:/workspace:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - php
+  db:
+    image: mariadb:11.8.9
+    environment:
+      MARIADB_DATABASE: contao
+      MARIADB_USER: contao
+      MARIADB_PASSWORD: contao
+      MARIADB_ROOT_PASSWORD: local-only
+    tmpfs:
+      - /var/lib/mysql:size=512m
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+volumes:
+  composer-cache:
