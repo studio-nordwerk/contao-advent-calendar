@@ -2,24 +2,28 @@
 
 declare(strict_types=1);
 
-namespace HeikeWiese\ContaoAdventCalendarBundle\Controller;
+namespace Nordwerk\AdventCalendarBundle\Controller;
 
 use Contao\CoreBundle\Controller\AbstractController;
 use Contao\CoreBundle\Image\Studio\Studio;
+use Contao\CoreBundle\InsertTag\InsertTagParser;
 use Contao\CoreBundle\Security\Authentication\Token\TokenChecker;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
+use Contao\CoreBundle\Util\LocaleUtil;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
-use HeikeWiese\ContaoAdventCalendarBundle\Calendar\DoorRules;
+use Nordwerk\AdventCalendarBundle\Calendar\DoorRules;
+use Nordwerk\AdventCalendarBundle\Security\DoorAccess;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\LocaleAwareInterface;
 
 /**
  * Liefert den Inhalt eines Türchens, aber nur, wenn sein Tag gekommen ist.
  */
-#[Route('/_advent_calendar/{id}', name: 'heike_wiese_advent_calendar_door', requirements: ['id' => '\d+'], defaults: ['_scope' => 'frontend'], methods: ['GET'])]
+#[Route('/_advent_calendar/{id}', name: 'nordwerk_advent_calendar_door', requirements: ['id' => '\d+'], defaults: ['_scope' => 'frontend'], methods: ['GET'])]
 class DoorController extends AbstractController
 {
     public function __construct(
@@ -28,6 +32,10 @@ class DoorController extends AbstractController
         private readonly Studio $studio,
         #[Autowire(service: 'contao.security.token_checker')]
         private readonly TokenChecker $tokenChecker,
+        #[Autowire(service: 'translator')]
+        private readonly LocaleAwareInterface $translator,
+        #[Autowire(service: 'contao.insert_tag.parser')]
+        private readonly InsertTagParser $insertTags,
     ) {
     }
 
@@ -41,8 +49,19 @@ class DoorController extends AbstractController
             [$id],
         );
 
-        if (false === $element || !$this->isVisible($element)) {
+        $pages = false === $element ? [] : $this->visiblePages($element);
+
+        if ([] === $pages) {
             return $this->reply(['state' => 'missing'], 404);
+        }
+
+        // Texte und Bildtexte in der Sprache der Website (die Adresse selbst hat keine Seite und keine Sprache)
+        $locale = null;
+
+        if ($language = (string) ($pages[array_key_last($pages)]['language'] ?? '')) {
+            $locale = LocaleUtil::formatAsLocale($language);
+            $request->setLocale($locale);
+            $this->translator->setLocale($locale);
         }
 
         $calendar = $this->connection->fetchAssociative(
@@ -83,6 +102,11 @@ class DoorController extends AbstractController
             $door[$field] = StringUtil::decodeEntities((string) $door[$field]);
         }
 
+        // Insert-Tags hier auflösen statt im Template: gleiches Ergebnis in Contao 5 und 6 (dort
+        // entfernt der Twig-Filter insert_tag HTML, z. B. aus {{link::*}}).
+        $door['text'] = $this->insertTags->replaceInline((string) $door['text']);
+        $door['url'] = StringUtil::decodeEntities($this->insertTags->replaceInline((string) $door['url']));
+
         // Ohne eingestellte Bildgröße auf 1200 px verkleinern: So landet das Bild in
         // assets/images und ist auch sichtbar, wenn sein Ordner in der Dateiverwaltung
         // nicht öffentlich ist.
@@ -93,7 +117,7 @@ class DoorController extends AbstractController
         }
 
         $figure = $door['singleSRC']
-            ? $this->studio->createFigureBuilder()->fromUuid($door['singleSRC'])->setSize($size)->buildIfResourceExists()
+            ? $this->studio->createFigureBuilder()->fromUuid($door['singleSRC'])->setSize($size)->setLocale($locale)->buildIfResourceExists()
             : null;
 
         $html = $this->renderView('@Contao/advent_calendar/door.html.twig', [
@@ -110,21 +134,57 @@ class DoorController extends AbstractController
     }
 
     /**
+     * Sichtbar nur, wenn der Besucher auch die Seite mit dem Element sehen darf (siehe DoorAccess).
+     * Elemente außerhalb von Artikeln (z. B. in Nachrichten) liefern keine Türchen.
+     *
      * @param array<string, mixed> $element
+     *
+     * @return list<array<string, mixed>> Seite des Elements bis zur Startseite; leer, wenn nicht sichtbar
      */
-    private function isVisible(array $element): bool
+    private function visiblePages(array $element): array
     {
-        $now = time();
+        $elements = [$element];
 
-        if ($element['invisible'] || ($element['start'] && $element['start'] > $now) || ($element['stop'] && $element['stop'] <= $now)) {
-            return $this->tokenChecker->isPreviewMode();
+        // Verschachtelte Inhalte (Element in Element) bis zum Artikel hinauf
+        while ('tl_content' === ($elements[array_key_last($elements)]['ptable'] ?? '') && \count($elements) < 20) {
+            $parent = $this->connection->fetchAssociative('SELECT * FROM tl_content WHERE id = ?', [(int) $elements[array_key_last($elements)]['pid']]);
+
+            if (false === $parent) {
+                return [];
+            }
+
+            $elements[] = $parent;
         }
 
-        if ($element['protected']) {
-            return $this->isGranted(ContaoCorePermissions::MEMBER_IN_GROUPS, StringUtil::deserialize($element['groups'], true));
+        $outer = $elements[array_key_last($elements)];
+        $article = 'tl_article' === ($outer['ptable'] ?: 'tl_article')
+            ? $this->connection->fetchAssociative('SELECT * FROM tl_article WHERE id = ?', [(int) $outer['pid']])
+            : false;
+
+        $pages = [];
+        $pageId = false === $article ? 0 : (int) $article['pid'];
+
+        while ($pageId > 0 && \count($pages) < 50) {
+            $page = $this->connection->fetchAssociative('SELECT * FROM tl_page WHERE id = ?', [$pageId]);
+
+            if (false === $page) {
+                return [];
+            }
+
+            $pages[] = $page;
+            $pageId = (int) $page['pid'];
         }
 
-        return true;
+        $visible = DoorAccess::isVisible(
+            $elements,
+            false === $article ? null : $article,
+            $pages,
+            time(),
+            $this->tokenChecker->isPreviewMode(),
+            fn (array $groups): bool => $this->isGranted(ContaoCorePermissions::MEMBER_IN_GROUPS, $groups),
+        );
+
+        return $visible ? $pages : [];
     }
 
     /**

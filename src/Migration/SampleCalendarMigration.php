@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HeikeWiese\ContaoAdventCalendarBundle\Migration;
+namespace Nordwerk\AdventCalendarBundle\Migration;
 
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Migration\AbstractMigration;
@@ -12,6 +12,7 @@ use Contao\Folder;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Legt bei der ersten Installation einen „Muster-Adventskalender“ mit 24
@@ -86,6 +87,27 @@ class SampleCalendarMigration extends AbstractMigration
         $this->framework->initialize();
 
         $folder = $this->uploadPath.'/'.self::FOLDER;
+
+        // Alles oder nichts: Bricht etwas ab, verschwinden Ordner und Einträge wieder, und die
+        // Migration läuft beim nächsten Datenbank-Update erneut.
+        $this->connection->beginTransaction();
+
+        try {
+            $this->createCalendar($folder);
+            $this->connection->commit();
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            (new Filesystem())->remove($this->projectDir.'/'.$folder);
+            $this->framework->getAdapter(Dbafs::class)->deleteResource($folder);
+
+            throw $e;
+        }
+
+        return $this->createResult(true, 'Adventskalender: Muster-Adventskalender mit 24 Türchen angelegt (Demo-Modus bis 30. November).');
+    }
+
+    private function createCalendar(string $folder): void
+    {
         new Folder($folder);
 
         $now = time();
@@ -95,6 +117,7 @@ class SampleCalendarMigration extends AbstractMigration
             'year' => 0,
             'keepOpen' => '1',
             'shuffle' => '1',
+            // Zum Ausprobieren sind bis zum 30. November alle Türchen offen, ab 1. Dezember gilt das Datum.
             'demoMode' => '1',
             'backgroundType' => 'poinsettia',
             'snow' => '1',
@@ -128,7 +151,5 @@ class SampleCalendarMigration extends AbstractMigration
                 ['singleSRC' => ParameterType::BINARY],
             );
         }
-
-        return $this->createResult(true, 'Adventskalender: Muster-Adventskalender mit 24 Türchen angelegt (Demo-Modus an).');
     }
 }

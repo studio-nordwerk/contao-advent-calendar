@@ -1,38 +1,55 @@
 {% use '@Contao/component/_figure.html.twig' %}
+{% trans_default_domain 'contao_default' %}
 
 {#
-    Inhalt eines geöffneten Türchens – überschreibbar im Template Studio.
+    Inhalt eines geöffneten Türchens – überschreibbar im Template Studio, einzelne Teile über
+    die Blöcke. Die Texte stehen in den Sprachdateien (MSC.adventCalendar…).
 #}
 
 <article class="advent-calendar__door-content">
-    {% if door.kicker %}<p class="advent-calendar__kicker">{{ door.kicker }}</p>{% endif %}
-    <h2 class="advent-calendar__headline">{{ door.headline }}</h2>
+    {% block kicker %}
+        {% if door.kicker %}<p class="advent-calendar__kicker">{{ door.kicker }}</p>{% endif %}
+    {% endblock %}
 
-    {% if figure %}
-        {% with {figure: figure} %}{{ block('figure_component') }}{% endwith %}
-    {% endif %}
+    {% block headline %}
+        <h2 class="advent-calendar__headline">{{ door.headline }}</h2>
+    {% endblock %}
 
-    {% if door.text %}
-        <div class="advent-calendar__text">{{ door.text|insert_tag|raw }}</div>
-    {% endif %}
+    {% block figure %}
+        {% if figure %}
+            {% with {figure: figure} %}{{ block('figure_component') }}{% endwith %}
+        {% endif %}
+    {% endblock %}
 
-    {% if door.price %}
-        <p class="advent-calendar__price">
-            <span class="advent-calendar__price-new">{{ door.price }}</span>
-            {% if door.oldPrice %}<s class="advent-calendar__price-old">{{ door.oldPrice }}</s>{% endif %}
-        </p>
-    {% endif %}
+    {% block text %}
+        {% if door.text %}
+            <div class="advent-calendar__text">{{ door.text|raw }}</div>
+        {% endif %}
+    {% endblock %}
 
-    {% if door.couponCode %}
-        <p class="advent-calendar__coupon">
-            <span>Ihr Code:</span>
-            <button type="button" class="advent-calendar__code" data-copy="{{ door.couponCode }}" title="Code kopieren">{{ door.couponCode }}</button>
-        </p>
-    {% endif %}
+    {% block price %}
+        {% if door.price %}
+            <p class="advent-calendar__price">
+                <span class="advent-calendar__price-new">{{ door.price }}</span>
+                {% if door.oldPrice %}<s class="advent-calendar__price-old">{{ door.oldPrice }}</s>{% endif %}
+            </p>
+        {% endif %}
+    {% endblock %}
 
-    {% if door.url %}
-        <p class="advent-calendar__action">
-            <a class="advent-calendar__button" href="{{ door.url|insert_tag }}"{% if door.target %} target="_blank" rel="noopener"{% endif %}>{{ door.linkTitle ?: 'Zum Angebot' }}</a>
-        </p>
-    {% endif %}
+    {% block coupon %}
+        {% if door.couponCode %}
+            <p class="advent-calendar__coupon">
+                <span>{{ 'MSC.adventCalendarCode'|trans }}</span>
+                <button type="button" class="advent-calendar__code" data-copy="{{ door.couponCode }}" title="{{ 'MSC.adventCalendarCopy'|trans }}">{{ door.couponCode }}</button>
+            </p>
+        {% endif %}
+    {% endblock %}
+
+    {% block action %}
+        {% if door.url %}
+            <p class="advent-calendar__action">
+                <a class="advent-calendar__button" href="{{ door.url }}"{% if door.target %} target="_blank" rel="noopener"{% endif %}>{{ door.linkTitle ?: 'MSC.adventCalendarButton'|trans }}</a>
+            </p>
+        {% endif %}
+    {% endblock %}
 </article>

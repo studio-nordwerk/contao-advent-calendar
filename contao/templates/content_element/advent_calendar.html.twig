@@ -1,54 +1,72 @@
 {% extends '@Contao/content_element/_base.html.twig' %}
 {% use '@Contao/component/_figure.html.twig' %}
+{% trans_default_domain 'contao_default' %}
 
 {#
     Adventskalender – überschreibbar im Template Studio.
-    Die Hinweistexte stehen in den data-Attributen und lassen sich hier anpassen.
+    Die Texte stehen in den Sprachdateien (MSC.adventCalendar…). Die Hinweise beim Klick auf ein
+    noch geschlossenes Türchen stehen als HTML in den data-text-Attributen (Block „texts“).
     Der Inhalt eines Türchens wird erst beim Klick vom Server geholt.
 #}
 
 {% block content %}
+    {% add 'advent_calendar_css' to head %}<link rel="stylesheet" href="{{ css_url }}">{% endadd %}
+    {% add 'advent_calendar_js' to body %}<script src="{{ js_url }}" defer></script>{% endadd %}
+
     {% set poinsettia = background_type == 'poinsettia' %}
+
     <div class="advent-calendar{% if background or poinsettia %} advent-calendar--image{% endif %}{% if poinsettia %} advent-calendar--poinsettia{% endif %}"
          data-advent-calendar="{{ door_url }}"
          data-year="{{ calendar.year ?: 'now'|date('Y') }}"
+         data-timezone="{{ timezone }}"
          data-keep-open="{{ calendar.keepOpen ? 1 : 0 }}"
-         data-demo="{{ calendar.demoMode ? 1 : 0 }}"
+         data-demo="{{ demo ? 1 : 0 }}"
          {% if calendar.snow %}data-snow{% endif %}
-         data-text-early="<p class=&quot;advent-calendar__kicker&quot;>Noch ein bisschen Geduld</p><h2>Dieses Türchen öffnet sich am %s. Dezember.</h2><p>Bis dahin: Schauen Sie gern ins heutige Türchen.</p>"
-         data-text-past="<p class=&quot;advent-calendar__kicker&quot;>Schon vorbei</p><h2>Dieses Türchen hat sich wieder geschlossen.</h2><p>Das heutige Türchen wartet auf Sie.</p>"
-         data-text-empty="<h2>Hier ist heute leider nichts drin.</h2>"
-         data-text-error="<h2>Das hat gerade nicht geklappt.</h2><p>Bitte versuchen Sie es gleich noch einmal.</p>">
+         {% block texts %}
+             {%- set t = 'MSC.adventCalendar' -%}
+             data-text-early="{{ '<p class="advent-calendar__kicker">' ~ (t ~ 'EarlyKicker')|trans|e ~ '</p><h2>' ~ (t ~ 'Early')|trans|e ~ '</h2><p>' ~ (t ~ 'EarlyText')|trans|e ~ '</p>' }}"
+             data-text-past="{{ '<p class="advent-calendar__kicker">' ~ (t ~ 'PastKicker')|trans|e ~ '</p><h2>' ~ (t ~ 'Past')|trans|e ~ '</h2><p>' ~ (t ~ 'PastText')|trans|e ~ '</p>' }}"
+             data-text-empty="{{ '<h2>' ~ (t ~ 'Empty')|trans|e ~ '</h2>' }}"
+             data-text-error="{{ '<h2>' ~ (t ~ 'Error')|trans|e ~ '</h2><p>' ~ (t ~ 'ErrorText')|trans|e ~ '</p>' }}"
+         {%- endblock %}>
 
-        {% if poinsettia %}
-            <div class="advent-calendar__background" aria-hidden="true">
-                <figure><img src="{{ poinsettia_url }}" alt="" width="1376" height="768"></figure>
-            </div>
-        {% elseif background %}
-            <div class="advent-calendar__background" aria-hidden="true">
-                {% with {figure: background} %}{{ block('figure_component') }}{% endwith %}
-            </div>
-        {% endif %}
+        {% block background %}
+            {% if poinsettia %}
+                <div class="advent-calendar__background" aria-hidden="true">
+                    <figure><img src="{{ poinsettia_url }}" alt="" width="1376" height="768"></figure>
+                </div>
+            {% elseif background %}
+                <div class="advent-calendar__background" aria-hidden="true">
+                    {% with {figure: background} %}{{ block('figure_component') }}{% endwith %}
+                </div>
+            {% endif %}
+        {% endblock %}
 
-        {% if calendar.demoMode %}
-            <p class="advent-calendar__demo">Vorschau: Alle Türchen sind zum Ausprobieren geöffnet.</p>
-        {% endif %}
+        {% block demo %}
+            {% if demo %}
+                <p class="advent-calendar__demo">{{ 'MSC.adventCalendarDemo'|trans }}</p>
+            {% endif %}
+        {% endblock %}
 
-        <ol class="advent-calendar__grid">
-            {% for day in days %}
-                <li class="advent-calendar__item{% if day == 24 %} advent-calendar__item--big{% endif %}">
-                    <button type="button" class="advent-calendar__door" data-day="{{ day }}" aria-haspopup="dialog" aria-label="Türchen {{ day }}">
-                        <span class="advent-calendar__number">{{ day }}</span>
-                    </button>
-                </li>
-            {% endfor %}
-        </ol>
+        {% block grid %}
+            <ol class="advent-calendar__grid">
+                {% for day in days %}
+                    <li class="advent-calendar__item{% if day == 24 %} advent-calendar__item--big{% endif %}">
+                        <button type="button" class="advent-calendar__door" data-day="{{ day }}" aria-haspopup="dialog" aria-label="{{ 'MSC.adventCalendarDoor'|trans([day]) }}">
+                            <span class="advent-calendar__number">{{ day }}</span>
+                        </button>
+                    </li>
+                {% endfor %}
+            </ol>
+        {% endblock %}
 
-        <dialog class="advent-calendar__dialog" aria-label="Türchen">
-            <form method="dialog" class="advent-calendar__close-form">
-                <button class="advent-calendar__close" aria-label="Schließen">×</button>
-            </form>
-            <div class="advent-calendar__content" aria-live="polite"></div>
-        </dialog>
+        {% block dialog %}
+            <dialog class="advent-calendar__dialog" aria-label="{{ 'MSC.adventCalendarDialog'|trans }}">
+                <form method="dialog" class="advent-calendar__close-form">
+                    <button class="advent-calendar__close" aria-label="{{ 'MSC.adventCalendarClose'|trans }}">×</button>
+                </form>
+                <div class="advent-calendar__content" aria-live="polite"></div>
+            </dialog>
+        {% endblock %}
     </div>
 {% endblock %}

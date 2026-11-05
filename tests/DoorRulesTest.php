@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 require __DIR__.'/../src/Calendar/DoorRules.php';
 
-use HeikeWiese\ContaoAdventCalendarBundle\Calendar\DoorRules as R;
+use Nordwerk\AdventCalendarBundle\Calendar\DoorRules as R;
 
 $failures = 0;
 
@@ -39,8 +39,11 @@ check('Januar danach: zu ohne „bleiben offen“', R::state(5, $at('2027-01-03'
 check('Jahr leer = jedes Jahr: im Oktober des Folgejahres wieder zu', R::state(1, $at('2027-10-01'), 0), R::EARLY);
 check('Jahr leer = jedes Jahr: am 5.12. des Folgejahres offen', R::state(5, $at('2027-12-05'), 0), R::OPEN);
 check('Kalender für 2027 ist im Dezember 2026 noch zu', R::state(1, $at('2026-12-20'), 2027), R::EARLY);
-check('Demo-Modus öffnet alles', R::state(24, $at('2026-10-28'), 2026, false, true), R::OPEN);
-check('Tag 25 gibt es nicht', R::state(25, $at('2026-12-25'), 2026, true, true), R::EARLY);
+check('Demo-Modus öffnet im November alles', R::state(24, $at('2026-11-30 23:59'), 2026, false, true), R::OPEN);
+check('Demo-Modus endet am 1. Dezember von selbst', R::state(24, $at('2026-12-01 00:00'), 2026, false, true), R::EARLY);
+check('Demo-Modus, Jahr leer: endet am 1. Dezember', R::state(2, $at('2027-12-01 08:00'), 0, true, true), R::EARLY);
+check('Demo-Modus für 2027 gilt im Dezember 2026 noch', R::state(24, $at('2026-12-10'), 2027, true, true), R::OPEN);
+check('Tag 25 gibt es nicht', R::state(25, $at('2026-11-25'), 2026, true, true), R::EARLY);
 check('Tag 0 gibt es nicht', R::state(0, $at('2026-12-25'), 2026), R::EARLY);
 
 $order = R::order(7, true);

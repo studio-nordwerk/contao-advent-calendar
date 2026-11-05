@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0 – 05.11.2026
+
+- Sicherheit: Türchen kommen nur noch heraus, wenn der Besucher die Seite mit dem Kalender sehen darf. Vorher ließen sich Türchen samt Gutscheincodes auch von unveröffentlichten Seiten und Seiten nur für Mitglieder abrufen. Geprüft werden Element, Artikel und alle Seiten darüber (veröffentlicht, Zeitraum, Mitgliedergruppen).
+- Neuer Paketname `nordwerk/contao-advent-calendar-bundle` wie bei den anderen Nordwerk-Paketen. Vor dem Update das alte Paket entfernen, Kalender und Türchen bleiben erhalten (siehe README).
+- Demo-Modus endet am 1. Dezember von selbst. Wer vergisst, ihn auszuschalten, verrät im Dezember keine Türchen.
+- Backend: Die Türchenliste warnt, wenn Bilder in einem öffentlichen Ordner liegen und so vorab aufrufbar sind.
+- Texte im Kalender stehen jetzt in den Sprachdateien (Deutsch und Englisch) und lassen sich dort ändern. Türchen sprechen die Sprache der Website.
+- Templates mit Blöcken zum gezielten Überschreiben. Stylesheet und Skript kommen über `{% add %}` in die Seite.
+- Die Markierung „heute“ richtet sich nach der Zeitzone der Website statt nach der Uhr des Besuchers.
+- Ändert man einen Kalender, leert Contao den Seiten-Cache.
+- Musterkalender: Bricht das Anlegen ab, wird es beim nächsten Datenbank-Update wiederholt.
+- Getestet mit Contao 5.3, 5.7 und 6.0.
+
 ## 0.2.0 – 04.11.2026
 
 - Neu: Bei der ersten Installation entsteht ein „Muster-Adventskalender“ mit 24 Beispiel-Türchen (Seifen, Düfte, Pflege für Männer, Gutscheine, Tipps) und 8 Beispielbildern (KI-generiert mit Gemini) in files/adventskalender-muster. Demo-Modus ist an. Gibt es schon einen Kalender, wird nichts angelegt.

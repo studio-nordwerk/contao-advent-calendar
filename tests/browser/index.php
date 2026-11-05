@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 require __DIR__.'/../../src/Calendar/DoorRules.php';
 
-use HeikeWiese\ContaoAdventCalendarBundle\Calendar\DoorRules;
+use Nordwerk\AdventCalendarBundle\Calendar\DoorRules;
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 

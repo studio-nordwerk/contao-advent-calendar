@@ -1,5 +1,5 @@
 {
-    "name": "heike-wiese/contao-advent-calendar-bundle",
+    "name": "nordwerk/contao-advent-calendar-bundle",
     "description": "Adventskalender für Contao: 24 Türchen mit Angeboten, Gutscheinen oder Geschichten. Der Server prüft das Datum, nichts lässt sich vorab ansehen.",
     "license": "MIT",
     "type": "contao-bundle",
@@ -22,6 +22,7 @@
         "doctrine/dbal": "^3.6 || ^4.0",
         "symfony/config": "^6.4 || ^7.0",
         "symfony/dependency-injection": "^6.4 || ^7.0",
+        "symfony/filesystem": "^6.4 || ^7.0",
         "symfony/http-foundation": "^6.4 || ^7.0",
         "symfony/http-kernel": "^6.4 || ^7.0",
         "symfony/routing": "^6.4 || ^7.0"
@@ -34,10 +35,10 @@
     },
     "autoload": {
         "psr-4": {
-            "HeikeWiese\\ContaoAdventCalendarBundle\\": "src/"
+            "Nordwerk\\AdventCalendarBundle\\": "src/"
         }
     },
     "extra": {
-        "contao-manager-plugin": "HeikeWiese\\ContaoAdventCalendarBundle\\ContaoManager\\Plugin"
+        "contao-manager-plugin": "Nordwerk\\AdventCalendarBundle\\ContaoManager\\Plugin"
     }
 }

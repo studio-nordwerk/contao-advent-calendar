@@ -1,3 +1,3 @@
-heike_wiese_advent_calendar:
+nordwerk_advent_calendar:
     resource: ../src/Controller/DoorController.php
     type: attribute
