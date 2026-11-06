@@ -18,12 +18,17 @@ Contao 5.3 bis 6.0 (getestet mit 5.3, 5.7 und 6.0), PHP 8.2 oder neuer (Contao 6
 
 ## Installation
 
-1. Im Contao Manager auf „Pakete hochladen“ klicken und die ZIP-Datei auswählen.
+1. Im Contao Manager nach `nordwerk/contao-advent-calendar-bundle` suchen und installieren. Alternativ die ZIP aus den [Releases](https://github.com/studio-nordwerk/contao-advent-calendar/releases) über „Pakete hochladen“ einspielen.
 2. „Änderungen anwenden“, danach die Datenbank aktualisieren.
 3. Im Backend unter „Inhalte → Adventskalender“ einen Kalender anlegen und die Türchen eintragen.
 4. Auf einer Seite das Inhaltselement „Adventskalender“ einfügen und den Kalender auswählen. Das Element gehört in einen Artikel, in Nachrichten oder Events liefert es keine Türchen aus.
 
-Der Paketname ist `nordwerk/contao-advent-calendar-bundle`.
+Über Composer:
+
+```bash
+composer require nordwerk/contao-advent-calendar-bundle
+vendor/bin/contao-console contao:migrate
+```
 
 ### Umstieg von Version 0.2
 

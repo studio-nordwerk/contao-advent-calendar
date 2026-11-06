@@ -2,6 +2,11 @@
     "name": "nordwerk/contao-advent-calendar-bundle",
     "description": "Adventskalender für Contao: 24 Türchen mit Angeboten, Gutscheinen oder Geschichten. Der Server prüft das Datum, nichts lässt sich vorab ansehen.",
     "license": "MIT",
+    "homepage": "https://www.nordwerk.studio/oss/contao-adventskalender",
+    "support": {
+        "issues": "https://github.com/studio-nordwerk/contao-advent-calendar/issues",
+        "source": "https://github.com/studio-nordwerk/contao-advent-calendar"
+    },
     "type": "contao-bundle",
     "keywords": [
         "contao",
