@@ -23,15 +23,26 @@ fi
 
 APP="app-$CONTAO"
 mkdir -p "$APP/public"
+
+# ARTIFACT=0.3.0 dev/check.sh 5.3: das Paket aus dist/*.zip installieren statt aus dem Quellordner
+# (so, wie der Contao Manager eine hochgeladene ZIP installiert)
+if [ -n "${ARTIFACT:-}" ]; then
+    REQUIRE="$ARTIFACT"
+    REPO='{ "type": "artifact", "url": "../../dist" }'
+    rm -rf "$APP/vendor/nordwerk" "$APP/composer.lock"
+else
+    REQUIRE='@dev'
+    REPO='{ "type": "path", "url": "../..", "options": { "symlink": true, "versions": { "nordwerk/contao-advent-calendar-bundle": "0.3.x-dev" } } }'
+fi
 cat > "$APP/composer.json" <<JSON
 {
     "type": "project",
     "require": {
         "contao/managed-edition": "~$CONTAO.0",
-        "nordwerk/contao-advent-calendar-bundle": "@dev"
+        "nordwerk/contao-advent-calendar-bundle": "$REQUIRE"
     },
     "repositories": [
-        { "type": "path", "url": "../..", "options": { "symlink": true, "versions": { "nordwerk/contao-advent-calendar-bundle": "0.3.x-dev" } } }
+        $REPO
     ],
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -75,7 +86,7 @@ door() {
     fi
 }
 
-echo "Contao $CONTAO, PHP $PHP_VERSION"
+echo "Contao $CONTAO, PHP $PHP_VERSION${ARTIFACT:+, Paket aus dist/ (ZIP $ARTIFACT)}"
 door 100 200 'GEHEIM-1' '' 'Öffentliche Seite: Türchen offen'
 door 100 200 'Ihr Code:' 'Your code' 'Türchen in der Sprache der Website'
 door 100 200 'a href=' '{{link' 'Insert-Tag im Text wird zum Link'

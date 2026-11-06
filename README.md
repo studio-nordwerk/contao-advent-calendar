@@ -85,7 +85,10 @@ php tests/DoorRulesTest.php     # wann geht welches Türchen auf
 php tests/DoorAccessTest.php    # wer darf ein Türchen abrufen
 dev/check.sh 5.3                # Contao 5.3 in Docker installieren und als Besucher prüfen (auch 5.7, 6.0)
 dev/check.sh 5.3 down           # Testinstallation stoppen
+ARTIFACT=0.3.0 dev/check.sh 5.3  # die gebaute ZIP aus dist/ installieren und prüfen
 ```
+
+Die ZIP für den Contao Manager baut `python3 scripts/build-artifact.py 0.3.0 dist/contao-advent-calendar-bundle-0.3.0.zip` aus dem letzten Commit.
 
 `dev/check.sh` legt öffentliche, geschützte und unveröffentlichte Seiten an und prüft, dass Türchen nur dort herauskommen, wo die Seite öffentlich ist.
 
